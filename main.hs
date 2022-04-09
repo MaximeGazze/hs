@@ -60,11 +60,11 @@ fizzbuzz n = aux 0 n ""
   where
     aux cur n acc
       | cur > n = acc
-      | cur == 0 = aux (cur + 1) n (acc)
+      | cur == 0 = aux (cur + 1) n acc
       | cur `mod` 3 == 0 && cur `mod` 5 == 0 = aux (cur + 1) n (acc ++ "fizzbuzz\n")
       | cur `mod` 3 == 0 = aux (cur + 1) n (acc ++ "fizz\n")
       | cur `mod` 5 == 0 = aux (cur + 1) n (acc ++ "buzz\n")
-      | otherwise = aux (cur + 1) n (acc)
+      | otherwise = aux (cur + 1) n acc
 
 -- main :: IO ()
 -- main = putStrLn (fizzbuzz 15)
@@ -79,13 +79,15 @@ listMan03 = length [1, 2, 3, 4, 5]            -- => 5
 listMan04 = init [1, 2, 3, 4, 5]              -- => [1, 2, 3, 4]
 listMan05 = null []                           -- => True
 listMan06 = null [1, 2, 3, 4, 5]              -- => False
-listMan07 = and [True, False]                 -- -> False
+listMan07 = and [True, False]                 -- => False
 listMan08 = or [True, False]                  -- => True
+listMan09 = even 1                            -- => False
+listMan10 = even 2                            -- => True
 
 -- List comprehensions
-listMan09 = [ 2 * x | x <- [1, 2, 3] ]        -- => [2, 4, 6]
-listMan10 = [ 2 * x | x <- [1, 2, 3], x > 1 ] -- => [4, 6]
-listMan11 = [ (x, y) | x <- [1, 2, 3], y <- ['a', 'b'] ] -- => [(1, 'a'), (1, 'b'), (2, 'a'), ...]
+listMan11 = [ 2 * x | x <- [1, 2, 3] ]        -- => [2, 4, 6]
+listMan12 = [ 2 * x | x <- [1, 2, 3], x > 1 ] -- => [4, 6]
+listMan13 = [ (x, y) | x <- [1, 2, 3], y <- ['a', 'b'] ] -- => [(1, 'a'), (1, 'b'), (2, 'a'), ...]
 
 -- List patterns
 mySum :: [Int] -> Int
@@ -95,7 +97,7 @@ mySum (x:xs) = x + mySum xs
 evens :: [Int] -> [Int]
 evens [] = []
 evens (x:xs)
-  | x `mod` 2 == 0 = x : evens xs
+  | even x = x : evens xs
   | otherwise = evens xs
 
 -- Tuples
@@ -120,7 +122,7 @@ elemIn e (x:xs) = e == x || elemIn e xs
 nubIn :: (Eq a) => [a] -> [a]
 nubIn [] = []
 nubIn (x:xs)
-  | elem x xs = nubIn xs
+  | x `elem` xs = nubIn xs
   | otherwise = x : nubIn xs
 
 -- isAsc - returns True if the list is ascending, False otherwise
@@ -134,7 +136,7 @@ hasPath :: [(Int, Int)] -> Int -> Int -> Bool
 hasPath [] currentNode endNode = currentNode == endNode
 hasPath (x:y:xs) currentNode endNode
   | currentNode == endNode = True
-  | xs == [] = False
+  | null xs = False
   | snd x == fst y = hasPath (y:xs) (snd y) endNode
   | otherwise = False
 
@@ -146,6 +148,7 @@ hasPath2 xs currentNode endNode
     let xs' = [ (first, second) | (first, second) <- xs, first /= currentNode ] in
     or [ hasPath2 xs' second endNode | (first, second) <- xs, first == currentNode ]
 
+-- pow - standard math power function
 pow :: Int -> Int -> Int
 pow n e = aux n e 1
   where
@@ -161,7 +164,39 @@ pow2 n e =
   in
     aux n e 1
 
+-- Higher order functions
+app :: (a -> b) -> a -> b -- this takes a function as it's first argument and any as its second, eq: `const app = ((a) => b, a) => b`
+app f x = f x
+
+-- Anonymous function
+-- they are define like so: `(\<args> -> <expr>)`
+add1 = (\x -> x + 1)
+sumOf3 = (\x y z -> x + y + z)
+
+-- map - maps one list to another list
+-- mapDefinition :: (a -> b) -> [a] -> [b]
+mapExample = map (\(x, y) -> x + y) [(1, 2), (2, 3), (3, 4)]          -- => [3, 5, 7]
+
+-- filter - filters a list and returns the result
+-- filterDefinition :: (a -> Bool) -> [a] -> [a]
+filterExample1 = filter (\x -> even x) [1, 2, 3, 4, 5, 6, 7, 8, 9]    -- => [2, 4, 6, 8]
+filterExample2 = filter even [1, 2, 3, 4, 5, 6, 7, 8, 9]              -- => [2, 4, 6, 8]
+filterExample3 = filter (\(x, y) -> x /= y) [(1, 2), (2, 2), (2, 3)]  -- => [(1, 2), (2, 3)]
+
+-- Currying
+-- addFunction x y = x + y
+-- addFunction x = (\y -> x + y)
+addFunction = (\x -> (\y -> x + y))
+
+-- addFunction 1 :: Int -> Int -- beacause add3 will return the lambda `(\y -> 1 + y)`
+curryExample = addFunction 1 -- => `(\y -> 1 + y)`, 1 is the value passed to x
+
+-- Partial function application
+doubleList = map (\x -> 2 * x) -- here we don't need to specify an argument, because it implicitly gets an argument from the lambda
+
+-- Composition
+
 main = do
-  print (pow2 8 0)
-  print (pow2 8 1)
-  print (pow2 8 2)
+  print (map (\(x, y) -> x + y) [(1, 2), (2, 3), (3, 4)])
+  print (doubleList [1, 2, 3])
+
